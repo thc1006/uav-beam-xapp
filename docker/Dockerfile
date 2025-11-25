@@ -3,8 +3,8 @@ FROM python:3.10-slim AS builder
 
 WORKDIR /build
 
-# Copy package files
-COPY setup.py pyproject.toml ./
+# Copy package files (pyproject.toml is the source of truth)
+COPY pyproject.toml ./
 COPY src/ ./src/
 COPY README.md ./
 
