@@ -19,8 +19,11 @@ References:
 
 import numpy as np
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Tuple, Callable
+from typing import Optional, List, Dict, Tuple, Callable, TYPE_CHECKING
 from enum import Enum
+
+if TYPE_CHECKING:
+    from uav_beam.beam_codebook import BeamCodebook
 from collections import deque
 import logging
 import time

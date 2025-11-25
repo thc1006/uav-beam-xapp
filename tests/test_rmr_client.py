@@ -13,7 +13,8 @@ from typing import Dict, Any
 try:
     from ricxappframe.xapp_frame import RMRXapp
     RMR_AVAILABLE = True
-except ImportError:
+except (ImportError, OSError):
+    # OSError occurs when librmr_si.so is not installed
     RMR_AVAILABLE = False
     RMRXapp = object
 
