@@ -23,13 +23,13 @@ This document provides comprehensive instructions for deploying the UAV Beam Tra
 | CPU | 2 cores | 4 cores |
 | Memory | 512 MB | 2 GB |
 | Disk | 100 MB | 500 MB |
-| Python | 3.8+ | 3.10+ |
+| Python | 3.10+ | 3.11+ |
 
 ### Software Dependencies
 
 ```bash
 # Core dependencies
-Python >= 3.8
+Python >= 3.10
 Flask >= 2.0.0
 NumPy >= 1.20.0
 SciPy >= 1.7.0
@@ -139,10 +139,10 @@ python dev_server.py
 
 ### Dockerfile
 
-Create `Dockerfile` in the xApp root directory:
+The Dockerfile is located in `docker/Dockerfile`:
 
 ```dockerfile
-# Dockerfile
+# docker/Dockerfile
 FROM python:3.10-slim
 
 # Set working directory
@@ -180,13 +180,13 @@ CMD ["--host", "0.0.0.0", "--port", "5001"]
 
 ```bash
 # Build image
-docker build -t uav-beam-xapp:latest .
+docker build -f docker/Dockerfile -t uav-beam-xapp:latest .
 
 # Build with specific tag
-docker build -t uav-beam-xapp:0.1.0 .
+docker build -f docker/Dockerfile -t uav-beam-xapp:0.1.0 .
 
 # Build with build args
-docker build \
+docker build -f docker/Dockerfile \
     --build-arg PYTHON_VERSION=3.10 \
     -t uav-beam-xapp:latest .
 ```
@@ -224,7 +224,7 @@ docker run -it --rm \
 
 ### Docker Compose
 
-Create `docker-compose.yml`:
+The docker-compose.yml is located in `docker/docker-compose.yml`:
 
 ```yaml
 version: '3.8'
@@ -232,8 +232,8 @@ version: '3.8'
 services:
   uav-beam-xapp:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     image: uav-beam-xapp:latest
     container_name: uav-beam-xapp
     ports:
@@ -293,17 +293,17 @@ volumes:
 ```
 
 ```bash
-# Start all services
-docker-compose up -d
+# Start all services (from project root)
+docker-compose -f docker/docker-compose.yml up -d
 
 # View logs
-docker-compose logs -f uav-beam-xapp
+docker-compose -f docker/docker-compose.yml logs -f uav-beam-xapp
 
 # Stop all services
-docker-compose down
+docker-compose -f docker/docker-compose.yml down
 
 # Rebuild and restart
-docker-compose up -d --build
+docker-compose -f docker/docker-compose.yml up -d --build
 ```
 
 ---

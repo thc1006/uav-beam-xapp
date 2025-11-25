@@ -150,3 +150,11 @@ results/
 benchmark_results/
 temp/
 tmp/
+
+# Virtual environments (explicit)
+venv-test/
+venv-*/
+.venv-*/
+
+# Claude Code
+.claude/

@@ -1,0 +1,48 @@
+FROM python:3.10-slim
+
+LABEL org.opencontainers.image.title="UAV Beam Tracking xApp (Development)"
+LABEL org.opencontainers.image.description="Development container with hot reload for UAV Beam xApp"
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        curl \
+        git \
+        build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy dependency files
+COPY requirements.txt requirements-dev.txt pyproject.toml setup.py ./
+COPY README.md ./
+
+# Install Python dependencies (dev mode)
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir -r requirements-dev.txt
+
+# Create non-root user for development
+RUN useradd -m -u 1000 -s /bin/bash developer && \
+    chown -R developer:developer /app
+
+USER developer
+
+# Expose ports
+EXPOSE 5001
+
+# Development environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    LOG_LEVEL=DEBUG \
+    FLASK_ENV=development \
+    FLASK_DEBUG=1
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:5001/health || exit 1
+
+# Note: Source code is mounted as volume in docker-compose.yml
+# This allows hot reload during development
+
+# Default command with auto-reload
+CMD ["python", "-m", "flask", "--app", "src.uav_beam.server:app", "run", "--host", "0.0.0.0", "--port", "5001", "--reload"]

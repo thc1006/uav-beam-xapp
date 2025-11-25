@@ -72,7 +72,7 @@ The UAV Beam Tracking xApp provides intelligent beam management for 5G NR FR2 (m
 
 ### Prerequisites
 
-- Python 3.8 or higher
+- Python 3.10 or higher
 - pip package manager
 
 ### Installation
@@ -214,12 +214,36 @@ For complete API documentation, see [docs/API.md](docs/API.md).
 | `server.py` | REST API server and xApp integration |
 | `main.py` | Application entry point |
 
+## Project Structure
+
+```
+uav-beam-xapp/
+├── src/uav_beam/          # Source code
+│   ├── beam_tracker.py    # Core beam management
+│   ├── trajectory_predictor.py  # UAV trajectory prediction
+│   ├── angle_estimator.py # AoA/AoD estimation
+│   ├── server.py          # REST API server
+│   └── main.py            # Entry point
+├── tests/                 # Unit and integration tests
+├── benchmarks/            # Performance benchmarks
+├── config/                # Configuration files
+├── docker/                # Docker files
+│   ├── Dockerfile         # Production image
+│   ├── Dockerfile.dev     # Development image
+│   └── docker-compose.yml # Compose configuration
+├── deployment/            # Kubernetes manifests
+├── helm/                  # Helm chart
+├── docs/                  # Documentation
+└── examples/              # Usage examples
+```
+
 ## Documentation
 
 - [API Reference](docs/API.md) - Complete REST API documentation
 - [Architecture Guide](docs/ARCHITECTURE.md) - System design and integration
 - [Algorithms](docs/ALGORITHMS.md) - Beam tracking and estimation algorithms
 - [Deployment Guide](docs/DEPLOYMENT.md) - Docker and Kubernetes deployment
+- [Contributing Guide](docs/CONTRIBUTING.md) - How to contribute
 
 ## Dependencies
 
