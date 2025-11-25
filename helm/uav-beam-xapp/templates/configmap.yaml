@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "uav-beam-xapp.fullname" . }}-config
+  namespace: {{ .Values.namespace | default "ricxapp" }}
+  labels:
+    {{- include "uav-beam-xapp.labels" . | nindent 4 }}
+data:
+  config-file.json: |
+    {
+      "xapp_name": "uav-beam-xapp",
+      "version": "{{ .Chart.AppVersion }}",
+      "controls": {
+        "logger_level": "{{ .Values.config.logger_level }}",
+        "beam": {
+          "num_beams_h": {{ .Values.config.beam.num_beams_h }},
+          "num_beams_v": {{ .Values.config.beam.num_beams_v }},
+          "beam_failure_threshold_db": {{ .Values.config.beam.beam_failure_threshold_db }},
+          "prediction_horizon_ms": {{ .Values.config.beam.prediction_horizon_ms }}
+        },
+        "predictor": {
+          "max_velocity": {{ .Values.config.predictor.max_velocity }},
+          "max_acceleration": {{ .Values.config.predictor.max_acceleration }},
+          "process_noise_std": {{ .Values.config.predictor.process_noise_std }},
+          "measurement_noise_std": {{ .Values.config.predictor.measurement_noise_std }}
+        },
+        "estimator": {
+          "num_elements_h": {{ .Values.config.estimator.num_elements_h }},
+          "num_elements_v": {{ .Values.config.estimator.num_elements_v }},
+          "spacing": {{ .Values.config.estimator.spacing }},
+          "method": "{{ .Values.config.estimator.method }}"
+        }
+      },
+      "rmr": {
+        "protPort": "{{ .Values.rmr.protPort }}",
+        "maxSize": {{ .Values.rmr.maxSize }},
+        "numWorkers": {{ .Values.rmr.numWorkers }}
+      }
+    }
+
+  router.txt: |
+    # RMR Routing Table for UAV Beam xApp
+    newrt|start
+    # E2 Indication messages (from E2Term to xApp)
+    mse|12050|0|service-{{ include "uav-beam-xapp.fullname" . }}-rmr.{{ .Values.namespace | default "ricxapp" }}:{{ .Values.rmr.ports.data }}
+    # E2 Control messages (from xApp to E2Term)
+    mse|12040|-1|service-ricplt-e2term-rmr-alpha.ricplt:{{ .Values.rmr.ports.data }}
+    # E2 Subscription messages (from xApp to E2Term)
+    mse|12010|-1|service-ricplt-e2term-rmr-alpha.ricplt:{{ .Values.rmr.ports.data }}
+    # E2 Subscription Delete messages (from xApp to E2Term)
+    mse|12020|-1|service-ricplt-e2term-rmr-alpha.ricplt:{{ .Values.rmr.ports.data }}
+    # E2 Subscription Response (from E2Term to xApp)
+    mse|12011|0|service-{{ include "uav-beam-xapp.fullname" . }}-rmr.{{ .Values.namespace | default "ricxapp" }}:{{ .Values.rmr.ports.data }}
+    # Control ACK/Failure (from E2Term to xApp)
+    mse|12041|0|service-{{ include "uav-beam-xapp.fullname" . }}-rmr.{{ .Values.namespace | default "ricxapp" }}:{{ .Values.rmr.ports.data }}
+    mse|12042|0|service-{{ include "uav-beam-xapp.fullname" . }}-rmr.{{ .Values.namespace | default "ricxapp" }}:{{ .Values.rmr.ports.data }}
+    newrt|end

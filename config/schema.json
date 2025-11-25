@@ -1,0 +1,159 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/thc1006/uav-beam-xapp/blob/main/config/schema.json",
+  "type": "object",
+  "title": "UAV Beam Tracking xApp Configuration Schema",
+  "description": "Configuration schema for UAV Beam Tracking xApp",
+  "required": ["xapp_name", "version", "controls"],
+  "properties": {
+    "xapp_name": {
+      "type": "string",
+      "description": "Name of the xApp",
+      "const": "uav-beam-xapp"
+    },
+    "version": {
+      "type": "string",
+      "description": "Version of the xApp",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "controls": {
+      "type": "object",
+      "description": "Runtime control parameters",
+      "properties": {
+        "logger_level": {
+          "type": "string",
+          "description": "Logging level",
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+          "default": "INFO"
+        },
+        "beam": {
+          "type": "object",
+          "description": "Beam management configuration",
+          "properties": {
+            "num_beams_h": {
+              "type": "integer",
+              "description": "Number of horizontal beams",
+              "minimum": 1,
+              "maximum": 64,
+              "default": 16
+            },
+            "num_beams_v": {
+              "type": "integer",
+              "description": "Number of vertical beams",
+              "minimum": 1,
+              "maximum": 64,
+              "default": 8
+            },
+            "beam_failure_threshold_db": {
+              "type": "number",
+              "description": "Beam failure RSRP threshold in dB",
+              "minimum": -150,
+              "maximum": 0,
+              "default": -10.0
+            },
+            "prediction_horizon_ms": {
+              "type": "number",
+              "description": "Trajectory prediction horizon in milliseconds",
+              "minimum": 1,
+              "maximum": 1000,
+              "default": 20.0
+            }
+          },
+          "required": ["num_beams_h", "num_beams_v"]
+        },
+        "predictor": {
+          "type": "object",
+          "description": "Trajectory predictor configuration",
+          "properties": {
+            "max_velocity": {
+              "type": "number",
+              "description": "Maximum UAV velocity in m/s",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 30.0
+            },
+            "max_acceleration": {
+              "type": "number",
+              "description": "Maximum UAV acceleration in m/s²",
+              "minimum": 0,
+              "maximum": 50,
+              "default": 5.0
+            },
+            "process_noise_std": {
+              "type": "number",
+              "description": "Process noise standard deviation",
+              "minimum": 0,
+              "maximum": 10,
+              "default": 0.1
+            },
+            "measurement_noise_std": {
+              "type": "number",
+              "description": "Measurement noise standard deviation",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 1.0
+            }
+          }
+        },
+        "estimator": {
+          "type": "object",
+          "description": "Angle estimator configuration",
+          "properties": {
+            "num_elements_h": {
+              "type": "integer",
+              "description": "Number of horizontal antenna elements",
+              "minimum": 1,
+              "maximum": 32,
+              "default": 8
+            },
+            "num_elements_v": {
+              "type": "integer",
+              "description": "Number of vertical antenna elements",
+              "minimum": 1,
+              "maximum": 32,
+              "default": 8
+            },
+            "spacing": {
+              "type": "number",
+              "description": "Antenna element spacing in wavelengths",
+              "minimum": 0.1,
+              "maximum": 2.0,
+              "default": 0.5
+            },
+            "method": {
+              "type": "string",
+              "description": "Angle estimation method",
+              "enum": ["music", "esprit", "bartlett"],
+              "default": "music"
+            }
+          }
+        }
+      }
+    },
+    "rmr": {
+      "type": "object",
+      "description": "RMR configuration",
+      "properties": {
+        "protPort": {
+          "type": "string",
+          "description": "RMR protocol and port",
+          "default": "tcp:4560"
+        },
+        "maxSize": {
+          "type": "integer",
+          "description": "Maximum RMR message size in bytes",
+          "minimum": 1024,
+          "maximum": 1048576,
+          "default": 65536
+        },
+        "numWorkers": {
+          "type": "integer",
+          "description": "Number of RMR worker threads",
+          "minimum": 1,
+          "maximum": 16,
+          "default": 1
+        }
+      }
+    }
+  }
+}

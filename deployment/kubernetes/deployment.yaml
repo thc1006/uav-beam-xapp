@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: uav-beam-xapp
+  labels:
+    app: uav-beam-xapp
+    component: near-rt-ric
+    version: v0.1.0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: uav-beam-xapp
+  template:
+    metadata:
+      labels:
+        app: uav-beam-xapp
+        component: near-rt-ric
+        version: v0.1.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5001"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: uav-beam-xapp
+        image: ghcr.io/thc1006/uav-beam-xapp:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 5001
+          protocol: TCP
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: BEAM_NUM_BEAMS_H
+          valueFrom:
+            configMapKeyRef:
+              name: uav-beam-xapp-config
+              key: beam_num_beams_h
+        - name: BEAM_NUM_BEAMS_V
+          valueFrom:
+            configMapKeyRef:
+              name: uav-beam-xapp-config
+              key: beam_num_beams_v
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: uav-beam-xapp-config
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000

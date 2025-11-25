@@ -1,0 +1,19 @@
+apiVersion: v2
+name: uav-beam-xapp
+description: UAV Beam Tracking xApp for O-RAN Near-RT RIC
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - oran
+  - xapp
+  - uav
+  - beamforming
+  - 5g
+maintainers:
+  - name: UAV O-RAN Research Team
+    email: noreply@example.com
+home: https://github.com/thc1006/uav-beam-xapp
+sources:
+  - https://github.com/thc1006/uav-beam-xapp
+icon: https://raw.githubusercontent.com/thc1006/uav-beam-xapp/main/docs/icon.png

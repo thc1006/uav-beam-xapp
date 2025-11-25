@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "uav-beam-xapp.fullname" . }}
+  namespace: {{ .Values.namespace | default "ricxapp" }}
+  labels:
+    {{- include "uav-beam-xapp.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "uav-beam-xapp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "uav-beam-xapp.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "uav-beam-xapp.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: {{ .Chart.Name }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["python", "-m", "uav_beam.rmr_client"]
+        args:
+        - "--config"
+        - "/opt/ric/config/config-file.json"
+        {{- if not .Values.sdl.enabled }}
+        - "--fake-sdl"
+        {{- end }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.service.httpPort }}
+          protocol: TCP
+        - name: rmr-data
+          containerPort: {{ .Values.rmr.ports.data }}
+          protocol: TCP
+        - name: rmr-route
+          containerPort: {{ .Values.rmr.ports.route }}
+          protocol: TCP
+        env:
+        - name: RMR_SEED_RT
+          value: "/opt/ric/config/router.txt"
+        - name: RMR_RTG_SVC
+          value: "service-ricplt-rtmgr-rmr.ricplt:4561"
+        - name: RMR_SRC_ID
+          value: "service-{{ include "uav-beam-xapp.fullname" . }}-rmr.{{ .Values.namespace | default "ricxapp" }}"
+        - name: LOG_LEVEL
+          value: "{{ .Values.config.logger_level }}"
+        {{- if .Values.sdl.enabled }}
+        - name: DBAAS_SERVICE_HOST
+          value: "{{ .Values.sdl.redis.host }}"
+        - name: DBAAS_SERVICE_PORT
+          value: "{{ .Values.sdl.redis.port }}"
+        - name: SDL_NAMESPACE
+          value: "{{ .Values.sdl.namespace }}"
+        {{- end }}
+        livenessProbe:
+          {{- toYaml .Values.livenessProbe | nindent 12 }}
+        readinessProbe:
+          {{- toYaml .Values.readinessProbe | nindent 12 }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        volumeMounts:
+        - name: config
+          mountPath: /opt/ric/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "uav-beam-xapp.fullname" . }}-config
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

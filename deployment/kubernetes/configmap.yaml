@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: uav-beam-xapp-config
+  labels:
+    app: uav-beam-xapp
+data:
+  # Beam configuration
+  beam_num_beams_h: "16"
+  beam_num_beams_v: "8"
+  beam_failure_threshold_db: "-10.0"
+
+  # Predictor configuration
+  predictor_max_velocity: "30.0"
+  predictor_max_acceleration: "5.0"
+  predictor_prediction_horizon_ms: "20.0"
+
+  # Estimator configuration
+  estimator_num_elements_h: "8"
+  estimator_num_elements_v: "8"
+  estimator_method: "music"
+
+  # Application configuration
+  config.json: |
+    {
+      "beam": {
+        "num_beams_h": 16,
+        "num_beams_v": 8,
+        "beam_failure_threshold_db": -10.0,
+        "prediction_horizon_ms": 20.0
+      },
+      "predictor": {
+        "max_velocity": 30.0,
+        "max_acceleration": 5.0,
+        "process_noise_std": 0.1,
+        "measurement_noise_std": 1.0
+      },
+      "estimator": {
+        "num_elements_h": 8,
+        "num_elements_v": 8,
+        "spacing": 0.5,
+        "method": "music"
+      },
+      "e2": {
+        "host": "e2term",
+        "port": 36422,
+        "reconnect_interval_s": 5.0
+      }
+    }

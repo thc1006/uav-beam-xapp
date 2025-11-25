@@ -1,0 +1,105 @@
+{
+  "xapp_name": "uav-beam-xapp",
+  "version": "0.1.0",
+  "containers": [
+    {
+      "name": "uav-beam-xapp",
+      "image": {
+        "registry": "ghcr.io",
+        "name": "thc1006/uav-beam-xapp",
+        "tag": "0.1.0"
+      },
+      "command": ["python", "-m", "uav_beam.rmr_client", "--config", "/opt/ric/config/config-file.json"]
+    }
+  ],
+  "messaging": {
+    "ports": [
+      {
+        "name": "rmr-data",
+        "container": "uav-beam-xapp",
+        "port": 4560,
+        "rxMessages": [
+          "RIC_INDICATION",
+          "RIC_SUB_RESP",
+          "RIC_CONTROL_ACK",
+          "RIC_CONTROL_FAILURE",
+          "RIC_HEALTH_CHECK_REQ"
+        ],
+        "txMessages": [
+          "RIC_CONTROL_REQ",
+          "RIC_SUB_REQ",
+          "RIC_SUB_DEL_REQ",
+          "RIC_HEALTH_CHECK_RESP"
+        ],
+        "policies": [],
+        "description": "RMR messaging port for E2 interface"
+      },
+      {
+        "name": "rmr-route",
+        "container": "uav-beam-xapp",
+        "port": 4561,
+        "description": "RMR route port"
+      }
+    ]
+  },
+  "rmr": {
+    "protPort": "tcp:4560",
+    "maxSize": 65536,
+    "numWorkers": 1,
+    "rxMessages": [
+      "RIC_INDICATION",
+      "RIC_SUB_RESP",
+      "RIC_CONTROL_ACK",
+      "RIC_CONTROL_FAILURE"
+    ],
+    "txMessages": [
+      "RIC_CONTROL_REQ",
+      "RIC_SUB_REQ",
+      "RIC_SUB_DEL_REQ"
+    ]
+  },
+  "controls": {
+    "logger_level": "INFO",
+    "beam": {
+      "num_beams_h": 16,
+      "num_beams_v": 8,
+      "beam_failure_threshold_db": -10.0,
+      "prediction_horizon_ms": 20.0
+    },
+    "predictor": {
+      "max_velocity": 30.0,
+      "max_acceleration": 5.0,
+      "process_noise_std": 0.1,
+      "measurement_noise_std": 1.0
+    },
+    "estimator": {
+      "num_elements_h": 8,
+      "num_elements_v": 8,
+      "spacing": 0.5,
+      "method": "music"
+    }
+  },
+  "service": {
+    "http": {
+      "port": 8080,
+      "health": "/health",
+      "metrics": "/metrics"
+    }
+  },
+  "readinessProbe": {
+    "httpGet": {
+      "path": "/health",
+      "port": 8080
+    },
+    "initialDelaySeconds": 10,
+    "periodSeconds": 10
+  },
+  "livenessProbe": {
+    "httpGet": {
+      "path": "/health",
+      "port": 8080
+    },
+    "initialDelaySeconds": 30,
+    "periodSeconds": 30
+  }
+}

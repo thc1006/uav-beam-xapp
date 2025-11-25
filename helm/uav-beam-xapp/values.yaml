@@ -1,0 +1,128 @@
+# Default values for uav-beam-xapp
+# This is a YAML-formatted file
+replicaCount: 1
+
+image:
+  repository: ghcr.io/thc1006/uav-beam-xapp
+  pullPolicy: IfNotPresent
+  tag: "0.1.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  allowPrivilegeEscalation: false
+
+# RMR configuration
+rmr:
+  protPort: "tcp:4560"
+  maxSize: 65536
+  numWorkers: 1
+  ports:
+    data: 4560
+    route: 4561
+
+# HTTP service configuration
+service:
+  type: ClusterIP
+  httpPort: 8080
+  rmrDataPort: 4560
+  rmrRoutePort: 4561
+
+# Resource limits
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "250m"
+  limits:
+    memory: "1Gi"
+    cpu: "1000m"
+
+# Probes
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+# Auto-scaling
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+
+# Node selection
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# xApp configuration
+config:
+  logger_level: "INFO"
+  beam:
+    num_beams_h: 16
+    num_beams_v: 8
+    beam_failure_threshold_db: -10.0
+    prediction_horizon_ms: 20.0
+  predictor:
+    max_velocity: 30.0
+    max_acceleration: 5.0
+    process_noise_std: 0.1
+    measurement_noise_std: 1.0
+  estimator:
+    num_elements_h: 8
+    num_elements_v: 8
+    spacing: 0.5
+    method: "music"
+
+# SDL (Shared Data Layer) configuration
+sdl:
+  enabled: true
+  namespace: "ricxapp"
+  dbPrefix: "uav-beam"
+  redis:
+    host: "service-ricplt-dbaas-tcp-cluster-0.ricplt"
+    port: 6379
+
+# E2 Configuration
+e2:
+  enabled: true
+  endpoints: []
+
+# A1 Policy configuration
+a1:
+  enabled: false
+  policyTypes: []

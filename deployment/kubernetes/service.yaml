@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: uav-beam-xapp
+  labels:
+    app: uav-beam-xapp
+    component: near-rt-ric
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5001
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: uav-beam-xapp

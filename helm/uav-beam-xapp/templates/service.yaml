@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "uav-beam-xapp.fullname" . }}-http
+  namespace: {{ .Values.namespace | default "ricxapp" }}
+  labels:
+    {{- include "uav-beam-xapp.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - port: {{ .Values.service.httpPort }}
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    {{- include "uav-beam-xapp.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "uav-beam-xapp.fullname" . }}-rmr
+  namespace: {{ .Values.namespace | default "ricxapp" }}
+  labels:
+    {{- include "uav-beam-xapp.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service for RMR
+  ports:
+  - port: {{ .Values.rmr.ports.data }}
+    targetPort: rmr-data
+    protocol: TCP
+    name: rmr-data
+  - port: {{ .Values.rmr.ports.route }}
+    targetPort: rmr-route
+    protocol: TCP
+    name: rmr-route
+  selector:
+    {{- include "uav-beam-xapp.selectorLabels" . | nindent 4 }}
